@@ -35,12 +35,11 @@ public class TaskListModel {
 		this.taskList.add(task);
 	}
 	
-	public void delete(Task task) {
-		this.taskList.remove(task);
+	public void delete(int index) {
+		this.taskList.remove(index);
 	}
 	
-	public void update(Task task) {
-		this.taskList.remove(task);
+	public void add(Task task) {
 		this.taskList.add(task);
 	}
 

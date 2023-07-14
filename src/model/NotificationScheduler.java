@@ -1,5 +1,7 @@
 package model;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -11,27 +13,27 @@ public class NotificationScheduler extends Thread{
 	public NotificationScheduler(TaskListView view) {
 		this.view = view;
 	}	
-	
-	public NotificationScheduler() {
-	}
+
 	
 	@Override
 	public void run() {
 		while(true) {
-			Date currentTime = new Date();
-			TaskListModel model = new TaskListModel();
-			List<Task> tasks = model.getTaskList();			
+			Date currentTime = new Date();			
+			List<Task> tasks = this.view.model.getTaskList();
+			
 			//có task nào có thời gian hết hạn là currentTime hoặc cách currentTime dưới 1 phút thì thông báo
 			for (int i = 0; i < tasks.size(); i++) {
-				System.out.println("code vào đây chưa");
-				Task task = tasks.get(i);
+				Task task = tasks.get(i);				
 				Date taskDateTime = task.getDate();
-				long timeDifference = taskDateTime.getTime() - currentTime.getTime();
-				long oneMinute = 60000;
-				if (taskDateTime.equals(currentTime) || timeDifference <= oneMinute ) {
+				int hour = task.getHour();
+				int minute = task.getMinute();
+//				long timeDifference = taskDateTime.getTime() - currentTime.getTime();				
+//				long oneMinute = 60000;
+				if (taskDateTime.equals(currentTime) &&
+					task.getHour() == LocalTime.now().getHour() &&
+					task.getMinute() == LocalTime.now().getMinute() ) {
 					JOptionPane.showMessageDialog(view, tasks.get(i).getTask() + " is time up!");
-					this.view.comboBox_status.setSelectedIndex(2);
-					System.out.println("code chạy ngon chưa");
+					System.out.println("task vào đây rồi nhé!");
 				}
 			}			
 			

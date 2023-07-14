@@ -24,7 +24,7 @@ public class Status implements Serializable{
 
 	@Override
 	public String toString() {
-		return "Status [status=" + status + "]";
+		return status;
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class Status implements Serializable{
 	}
 	
 	public static ArrayList<Status> getStatusList() {
-		String[] arr_Status = {"Continue", "Out of Date"};
+		String[] arr_Status = {"All", "Completed"};
 		ArrayList<Status> statusList = new ArrayList<>();
 		for (String status : arr_Status) {
 			Status stt = new Status(status);

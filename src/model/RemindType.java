@@ -45,7 +45,7 @@ public class RemindType implements Serializable{
 	}
 	
 	public static ArrayList<RemindType> getRemindTypeList() {
-		String[] arr_remindType = {"Never", "Hourly", "Daily", "Weekdays", "Weekends", "Weekly", "Monthly", "Yearly"};
+		String[] arr_remindType = {"Never"};
 		ArrayList<RemindType> remindTypeList = new ArrayList<>();
 		for (String remindType : arr_remindType) {
 			RemindType remind = new RemindType(remindType);
@@ -55,7 +55,7 @@ public class RemindType implements Serializable{
 	}
 
 	public static RemindType getRemindTypeByIndex(int remindType2) {
-		return RemindType.getRemindTypeList().get(remindType2);
+		return RemindType.getRemindTypeList().get(0);
 	}
 
 	public static RemindType getRemindTypeByName(String remindChosen) {

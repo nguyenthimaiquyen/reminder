@@ -19,7 +19,6 @@ public class TaskListController implements Action{
 		String cm = e.getActionCommand();		
 		
 		if (cm.equals("Create")) {
-			JOptionPane.showMessageDialog(view, "Please enter task's name is maximum 255 characters!");
 			this.view.deleteForm();
 			this.view.model.setChoice("Create");
 		} else if (cm.equals("Save")) {
@@ -28,12 +27,12 @@ public class TaskListController implements Action{
 			} catch (Exception e2) {
 				e2.printStackTrace();
 			}			
-		} else if (cm.equals("Update")) {
+		} else if (cm.equals("Update")) {			
 			this.view.showTask();
 		} else if (cm.equals("Delete")) {
 			this.view.deleteTask();
-		} else if (cm.equals("Cancel")) {
-			this.view.deleteForm();
+		} else if (cm.equals("Complete")) {
+			this.view.modifyTask();
 		} else if (cm.equals("Search")) {
 			this.view.findTask();
 		} else if (cm.equals("Load data")) {

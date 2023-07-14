@@ -1,10 +1,8 @@
 package model;
 
 import java.io.Serializable;
-import java.sql.Time;
 import java.util.Date;
 
-import javax.swing.JOptionPane;
 
 public class Task implements Serializable{
 	private static int AUTO_IDTASK = 1;
@@ -18,6 +16,8 @@ public class Task implements Serializable{
 
 	
 	public Task() {
+		this.idTask = AUTO_IDTASK;
+		AUTO_IDTASK++;
 	}
 		
 	public Task(int idTask, String task, Date date, int hour, int minute, Status status, RemindType remindType) {
