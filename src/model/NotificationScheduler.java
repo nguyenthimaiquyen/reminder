@@ -1,6 +1,11 @@
 package model;
 
-import java.time.LocalDate;
+import java.awt.AWTException;
+import java.awt.Image;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.TrayIcon.MessageType;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
@@ -14,26 +19,23 @@ public class NotificationScheduler extends Thread{
 		this.view = view;
 	}	
 
-	
 	@Override
 	public void run() {
 		while(true) {
 			Date currentTime = new Date();			
 			List<Task> tasks = this.view.model.getTaskList();
-			
-			//có task nào có thời gian hết hạn là currentTime hoặc cách currentTime dưới 1 phút thì thông báo
 			for (int i = 0; i < tasks.size(); i++) {
 				Task task = tasks.get(i);				
 				Date taskDateTime = task.getDate();
 				int hour = task.getHour();
 				int minute = task.getMinute();
-//				long timeDifference = taskDateTime.getTime() - currentTime.getTime();				
-//				long oneMinute = 60000;
-				if (taskDateTime.equals(currentTime) &&
+				String date = taskDateTime.getDate()+"/"+taskDateTime.getMonth()+"/"+taskDateTime.getYear();
+				String currentDate = currentTime.getDate()+"/"+currentTime.getMonth()+"/"+currentTime.getYear();
+				
+				if (date.equals(currentDate) &&
 					task.getHour() == LocalTime.now().getHour() &&
 					task.getMinute() == LocalTime.now().getMinute() ) {
 					JOptionPane.showMessageDialog(view, tasks.get(i).getTask() + " is time up!");
-					System.out.println("task vào đây rồi nhé!");
 				}
 			}			
 			
@@ -44,5 +46,7 @@ public class NotificationScheduler extends Thread{
 			}
 		}
 	}
+	
+	
 
 }

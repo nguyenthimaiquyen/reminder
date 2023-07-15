@@ -24,6 +24,8 @@ public class TaskListController implements Action{
 		} else if (cm.equals("Save")) {
 			try {
 				this.view.processAddTask();
+				this.view.saveFile();
+				JOptionPane.showMessageDialog(view, "You have successfully saved the file!");
 			} catch (Exception e2) {
 				e2.printStackTrace();
 			}			
@@ -31,6 +33,8 @@ public class TaskListController implements Action{
 			this.view.showTask();
 		} else if (cm.equals("Delete")) {
 			this.view.deleteTask();
+			this.view.saveFile();
+			JOptionPane.showMessageDialog(view, "You have successfully saved the file!");
 		} else if (cm.equals("Complete")) {
 			this.view.modifyTask();
 		} else if (cm.equals("Search")) {
@@ -41,9 +45,6 @@ public class TaskListController implements Action{
 			this.view.showAbout();
 		} else if (cm.equals("Exit")) {
 			this.view.exitProgram();
-		} else if (cm.equals("Save file")) {
-			this.view.saveFile();
-			JOptionPane.showMessageDialog(view, "You have successfully saved the file!");
 		} else if (cm.equals("Open")) {
 			this.view.openFile();
 		} else if (cm.equals("Export excel")) {

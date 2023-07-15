@@ -10,6 +10,8 @@ import model.RemindType;
 import model.Status;
 import model.Task;
 import model.TaskListModel;
+import model.TrayIconTask;
+
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -19,7 +21,9 @@ import javax.swing.JSpinner;
 
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.SystemTray;
 import java.awt.Toolkit;
+import java.awt.AWTException;
 import java.awt.Color;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -74,7 +78,7 @@ public class TaskListView extends JFrame {
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws AWTException{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {					
@@ -84,6 +88,13 @@ public class TaskListView extends JFrame {
 					taskListView.setVisible(true);
 					NotificationScheduler noti = new NotificationScheduler(taskListView);
 					noti.start();
+					
+					if (SystemTray.isSupported()) {
+						TrayIconTask td = new TrayIconTask(taskListView);
+			            td.displayTray();
+			        } else {
+			            System.err.println("System tray not supported!");
+			        }
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -121,11 +132,6 @@ public class TaskListView extends JFrame {
 		menuOpen.addActionListener(action);
 		menuOpen.setFont(new Font("Segoe UI", Font.PLAIN, 16));
 		menuTask.add(menuOpen);
-		
-		JMenuItem menuSave = new JMenuItem("Save file");
-		menuSave.addActionListener(action);
-		menuSave.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-		menuTask.add(menuSave);
 		
 		JMenuItem menuExport = new JMenuItem("Export excel");
 		menuExport.addActionListener(action);
@@ -394,32 +400,58 @@ public class TaskListView extends JFrame {
 			if(!this.model.checkExist(task)) {
 				this.model.insert(task);
 				this.addTaskInTable(task);
-			} else {
-				//lỗi khi ấn update -> save 
-//				Task taskChoosen = getTaskChosen();
+			} else {				
+				Task taskChoosen = getTaskChosen();				
 				List<Task> taskList = this.model.getTaskList();
 				for (int i = 0; i < taskList.size(); i++) {
-					if (task.getIdTask() == taskList.get(i).getIdTask()) {
+					if (taskChoosen.getIdTask() == taskList.get(i).getIdTask()) {
 						this.model.delete(i);
 						this.model.add(task);
+						System.out.println("không vào đây à");
 					}
 				}	
-					
+				int i = 0;
 				int rowCount = model_table.getRowCount();				
-				for (int i = 0; i < rowCount; i++) {
+				for (i = 0; i < rowCount; i++) {
 					String id = model_table.getValueAt(i, 0)+"";
-					if(id.equals(task.getIdTask()+"")) {
-						model_table.setValueAt(task.getIdTask()+"", i, 0);
+					if(id.equals(taskChoosen.getIdTask()+"")) {
+						model_table.setValueAt(taskChoosen.getIdTask()+"", i, 0);
 						model_table.setValueAt(task.getTask(), i, 1);
 						model_table.setValueAt(task.getDate().getDate() + "/" + (task.getDate().getMonth()+1) + "/" +(task.getDate().getYear()+1900), i, 2);
 						model_table.setValueAt(task.getHour()+":"+task.getMinute(), i, 3);
 						model_table.setValueAt(task.getStatus().getStatus()+"", i, 4);
-						model_table.setValueAt(task.getRemindType().getRemindType()+"", i, 5);
-//						this.model.update(task, i);			
+						model_table.setValueAt(task.getRemindType().getRemindType()+"", i, 5);	
+						break;
 					}
 				}
+				model_table.removeRow(i);
 			}		
 		}
+		
+		//hàm lấy dữ liệu từ các trường và tạo thành 1 đối tượng task để thêm task
+		public void processAddTask() {
+//			int idTask = Integer.valueOf(this.textField_taskID.getText());
+			int idTask = new Task().getIdTask();
+			String taskName = this.textField_taskName.getText();
+			Date date = this.dateChooser.getDate();
+			int hour = Integer.valueOf(this.hourSpinner.getValue()+"");
+			int minute = Integer.valueOf(this.minuteSpinner.getValue()+"");
+//			int status = this.comboBox_status.getSelectedIndex() - 1;
+			Status stt = Status.getStatusByIndex(0);
+//			int remindType = this.comboBox_remindType.getSelectedIndex() - 1;
+			RemindType remind = RemindType.getRemindTypeByIndex(0);
+			
+			Task task = new Task(idTask, taskName, date, hour, minute, stt, remind);		
+			
+			while(true) {
+				if (taskName.length() > 255) {
+					JOptionPane.showMessageDialog(this, "Please enter task's name is maximum 255 characters!");
+				} else {
+					break;
+				}				
+			}			
+			this.addOrUpdateTask(task);		
+		}		
 		
 		//hàm lấy ra task mà người dùng chọn để cập nhật
 		public Task getTaskChosen() {
@@ -472,30 +504,6 @@ public class TaskListView extends JFrame {
 			}
 		}
 		
-		//hàm lấy dữ liệu từ các trường và tạo thành 1 đối tượng task để thêm task
-		public void processAddTask() {
-//			int idTask = Integer.valueOf(this.textField_taskID.getText());
-			int idTask = new Task().getIdTask();
-			String taskName = this.textField_taskName.getText();
-			Date date = this.dateChooser.getDate();
-			int hour = Integer.valueOf(this.hourSpinner.getValue()+"");
-			int minute = Integer.valueOf(this.minuteSpinner.getValue()+"");
-//			int status = this.comboBox_status.getSelectedIndex() - 1;
-			Status stt = Status.getStatusByIndex(0);
-//			int remindType = this.comboBox_remindType.getSelectedIndex() - 1;
-			RemindType remind = RemindType.getRemindTypeByIndex(0);
-			
-			Task task = new Task(idTask, taskName, date, hour, minute, stt, remind);		
-			
-			while(true) {
-				if (taskName.length() > 255) {
-					JOptionPane.showMessageDialog(this, "Please enter task's name is maximum 255 characters!");
-				} else {
-					break;
-				}				
-			}			
-			this.addOrUpdateTask(task);		
-		}
 
 		//hàm tìm task
 		public void findTask() {
