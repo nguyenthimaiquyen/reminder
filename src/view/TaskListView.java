@@ -10,7 +10,6 @@ import model.RemindType;
 import model.Status;
 import model.Task;
 import model.TaskListModel;
-import model.TrayIconTask;
 
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -21,7 +20,6 @@ import javax.swing.JSpinner;
 
 import java.awt.Font;
 import java.awt.Image;
-import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.AWTException;
 import java.awt.Color;
@@ -50,6 +48,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -87,14 +86,7 @@ public class TaskListView extends JFrame {
 //					taskListView.openFile();
 					taskListView.setVisible(true);
 					NotificationScheduler noti = new NotificationScheduler(taskListView);
-					noti.start();
-					
-					if (SystemTray.isSupported()) {
-						TrayIconTask td = new TrayIconTask(taskListView);
-			            td.displayTray();
-			        } else {
-			            System.err.println("System tray not supported!");
-			        }
+					noti.start();						
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -298,34 +290,28 @@ public class TaskListView extends JFrame {
 		lblTimeDeadline.setBounds(537, 366, 76, 43);
 		contentPane.add(lblTimeDeadline);
 		
-		JButton btn_create = new JButton("Create");
-		btn_create.addActionListener(action);
-		btn_create.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		btn_create.setBounds(65, 547, 108, 43);
-		contentPane.add(btn_create);
-		
 		JButton btn_delete = new JButton("Delete");
 		btn_delete.addActionListener(action);
 		btn_delete.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		btn_delete.setBounds(243, 547, 108, 43);
+		btn_delete.setBounds(144, 547, 108, 43);
 		contentPane.add(btn_delete);
 		
 		JButton btn_update = new JButton("Update");
 		btn_update.addActionListener(action);
 		btn_update.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		btn_update.setBounds(422, 547, 108, 43);
+		btn_update.setBounds(346, 547, 108, 43);
 		contentPane.add(btn_update);
 		
 		JButton btn_save = new JButton("Save");
 		btn_save.addActionListener(action);
 		btn_save.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		btn_save.setBounds(606, 547, 108, 43);
+		btn_save.setBounds(555, 547, 108, 43);
 		contentPane.add(btn_save);
 		
 		JButton btn_complete = new JButton("Complete");
 		btn_complete.addActionListener(action);
 		btn_complete.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		btn_complete.setBounds(790, 547, 108, 43);
+		btn_complete.setBounds(759, 547, 108, 43);
 		contentPane.add(btn_complete);
 		
 		JSeparator separator_1_2 = new JSeparator();
@@ -374,7 +360,7 @@ public class TaskListView extends JFrame {
 		public void deleteForm() {
 //			textField_taskID.setText("");
 			textField_taskName.setText("");
-			dateChooser.setDateFormatString("");
+			dateChooser.setDate(new Date());;
 			hourSpinner.setValue(0);
 			minuteSpinner.setValue(0);
 //			comboBox_status.setSelectedIndex(0);
@@ -383,11 +369,12 @@ public class TaskListView extends JFrame {
 		
 		//hàm thêm task vào bảng dữ liệu
 		public void addTaskInTable(Task task) {
-			DefaultTableModel model_table = (DefaultTableModel) table.getModel();
-			model_table.addRow( new Object[] {
+			DefaultTableModel modelTable = (DefaultTableModel) table.getModel();
+			SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+			modelTable.addRow( new Object[] {
 					task.getIdTask()+"",
 					task.getTask(),
-					task.getDate().getDate() + "/" + (task.getDate().getMonth()+1) + "/" +(task.getDate().getYear()+1900),
+					formatter.format(task.getDate()),
 					task.getHour()+":"+task.getMinute(),
 					task.getStatus().getStatus(),
 					task.getRemindType().getRemindType()});
@@ -396,35 +383,38 @@ public class TaskListView extends JFrame {
 		//hàm thêm task hoặc cập nhật task
 		public void addOrUpdateTask(Task task) {
 			
-			DefaultTableModel model_table = (DefaultTableModel) table.getModel();
+			DefaultTableModel modelTable = (DefaultTableModel) table.getModel();
 			if(!this.model.checkExist(task)) {
 				this.model.insert(task);
 				this.addTaskInTable(task);
 			} else {				
 				Task taskChoosen = getTaskChosen();				
 				List<Task> taskList = this.model.getTaskList();
-				for (int i = 0; i < taskList.size(); i++) {
-					if (taskChoosen.getIdTask() == taskList.get(i).getIdTask()) {
-						this.model.delete(i);
+				for (int j = 0; j < taskList.size(); j++) {
+					if (taskChoosen.getIdTask() == taskList.get(j).getIdTask()) {
+						this.model.delete(j);
 						this.model.add(task);
-						System.out.println("không vào đây à");
+						System.out.println("không vào đây à");						
 					}
 				}	
-				int i = 0;
-				int rowCount = model_table.getRowCount();				
-				for (i = 0; i < rowCount; i++) {
-					String id = model_table.getValueAt(i, 0)+"";
+				int idRow = table.getSelectedRow();									
+				modelTable.removeRow(idRow);			
+				
+				int rowCount = modelTable.getRowCount();	
+				SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+				for (int i = 0; i < rowCount; i++) {
+					String id = modelTable.getValueAt(i, 0)+"";
 					if(id.equals(taskChoosen.getIdTask()+"")) {
-						model_table.setValueAt(taskChoosen.getIdTask()+"", i, 0);
-						model_table.setValueAt(task.getTask(), i, 1);
-						model_table.setValueAt(task.getDate().getDate() + "/" + (task.getDate().getMonth()+1) + "/" +(task.getDate().getYear()+1900), i, 2);
-						model_table.setValueAt(task.getHour()+":"+task.getMinute(), i, 3);
-						model_table.setValueAt(task.getStatus().getStatus()+"", i, 4);
-						model_table.setValueAt(task.getRemindType().getRemindType()+"", i, 5);	
+						modelTable.setValueAt(taskChoosen.getIdTask()+"", i, 0);
+						modelTable.setValueAt(task.getTask(), i, 1);
+						modelTable.setValueAt(formatter.format(task.getDate()), i, 2);
+						modelTable.setValueAt(task.getHour()+":"+task.getMinute(), i, 3);
+						modelTable.setValueAt(task.getStatus().getStatus()+"", i, 4);
+						modelTable.setValueAt(task.getRemindType().getRemindType()+"", i, 5);	
 						break;
 					}
 				}
-				model_table.removeRow(i);
+				
 			}		
 		}
 		
@@ -455,20 +445,27 @@ public class TaskListView extends JFrame {
 		
 		//hàm lấy ra task mà người dùng chọn để cập nhật
 		public Task getTaskChosen() {
-			DefaultTableModel model_table = (DefaultTableModel) table.getModel();
-			int i_row = table.getSelectedRow();
+			DefaultTableModel modelTable = (DefaultTableModel) table.getModel();
+			int idRow = table.getSelectedRow();			
+			int idTask = Integer.valueOf(modelTable.getValueAt(idRow, 0)+"");
+			String taskName = null;
+			Date date = null;
+			int hour = 0;
+			int minute = 0;			
+			Status stt = null;
+			RemindType remind = null;
 			
-			int idTask = Integer.valueOf(model_table.getValueAt(i_row, 0)+"");
-			String taskName = model_table.getValueAt(i_row, 1) + "";
-			String s_date = model_table.getValueAt(i_row, 2)+"";
-			Date date = new Date(s_date);
-			
-			String[] time = (model_table.getValueAt(i_row, 3) + "").split(":");
-			int hour = Integer.valueOf(time[0]);
-			int minute = Integer.valueOf(time[1]);
-			
-			Status stt = Status.getStatusByName(model_table.getValueAt(i_row, 4)+"");
-			RemindType remind = RemindType.getRemindTypeByName(model_table.getValueAt(i_row, 5)+"");
+			List<Task> taskList = this.model.getTaskList();			
+			for (int i = 0; i < taskList.size(); i++) {
+				if (idTask == taskList.get(i).getIdTask()) {
+					taskName = taskList.get(i).getTask();
+					date = taskList.get(i).getDate();
+					hour = taskList.get(i).getHour();
+					minute = taskList.get(i).getMinute();
+					stt = taskList.get(i).getStatus();
+					remind = taskList.get(i).getRemindType();					
+				}
+			}
 			
 			Task task = new Task(idTask, taskName, date, hour, minute, stt, remind);
 			return task;
@@ -489,8 +486,8 @@ public class TaskListView extends JFrame {
 
 		//hàm xóa task
 		public void deleteTask() {
-			DefaultTableModel model_table = (DefaultTableModel) table.getModel();
-			int i_row = table.getSelectedRow();
+			DefaultTableModel modelTable = (DefaultTableModel) table.getModel();
+			int idRow = table.getSelectedRow();
 			int choice = JOptionPane.showConfirmDialog(this, "Are you sure want to delete your task?");		
 			if (choice == JOptionPane.YES_OPTION) {
 				Task task = getTaskChosen();
@@ -500,7 +497,7 @@ public class TaskListView extends JFrame {
 						this.model.delete(i);
 					}
 				}				
-				model_table.removeRow(i_row);
+				modelTable.removeRow(idRow);
 			}
 		}
 		
@@ -513,15 +510,15 @@ public class TaskListView extends JFrame {
 			//thực hiện tìm kiếm task
 			int status = this.comboBox_status_search.getSelectedIndex()-1;
 			String TaskNameSearch = this.textField_TaskName_search.getText();
-			DefaultTableModel model_table = (DefaultTableModel) table.getModel();
-			int rowCount = model_table.getRowCount();
+			DefaultTableModel modelTable = (DefaultTableModel) table.getModel();
+			int rowCount = modelTable.getRowCount();
 			
 			Set<Integer> idTaskNeedToDelete = new TreeSet<Integer>();
 			if(status >= 0) {
 				Status sttChosen = Status.getStatusByIndex(status);
 				for (int i = 0; i < rowCount; i++) {
-					String statusName = model_table.getValueAt(i, 4)+ "";
-					String id = model_table.getValueAt(i, 0)+"";
+					String statusName = modelTable.getValueAt(i, 4)+ "";
+					String id = modelTable.getValueAt(i, 0)+"";
 					if(!statusName.equals(sttChosen.getStatus())) {
 						idTaskNeedToDelete.add(Integer.valueOf(id));
 					}
@@ -529,20 +526,20 @@ public class TaskListView extends JFrame {
 			}
 			if (TaskNameSearch.length() > 0) {
 				for (int i = 0; i < rowCount; i++) {
-					String name = model_table.getValueAt(i, 1)+"";
-					//String id = model_table.getValueAt(i, 0)+"";
+					String name = modelTable.getValueAt(i, 1)+"";
+					//String id = modelTable.getValueAt(i, 0)+"";
 					if(!name.equals(TaskNameSearch)) {
-						idTaskNeedToDelete.add(Integer.valueOf(model_table.getValueAt(i, 0)+""));
+						idTaskNeedToDelete.add(Integer.valueOf(modelTable.getValueAt(i, 0)+""));
 					}
 				}
 			}
 			for (Integer IdNeedToDelete : idTaskNeedToDelete) {
-				rowCount = model_table.getRowCount();
+				rowCount = modelTable.getRowCount();
 				for (int i = 0; i < rowCount; i++) {
-					String idInTable = model_table.getValueAt(i, 0)+"";
+					String idInTable = modelTable.getValueAt(i, 0)+"";
 					if(idInTable.equals(IdNeedToDelete.toString())) {
 						try {
-							model_table.removeRow(i);
+							modelTable.removeRow(i);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -555,13 +552,13 @@ public class TaskListView extends JFrame {
 		//hàm load lại toàn bộ dữ liệu task đã có
 		public void loadDataTable() {
 			while(true) {
-				DefaultTableModel model_table = (DefaultTableModel) table.getModel();
-				int rowCount = model_table.getRowCount();
+				DefaultTableModel modelTable = (DefaultTableModel) table.getModel();
+				int rowCount = modelTable.getRowCount();
 				if (rowCount == 0) {
 					break;
 				} else {
 					try {
-						model_table.removeRow(0);
+						modelTable.removeRow(0);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -662,6 +659,7 @@ public class TaskListView extends JFrame {
 			//xuất dữ liệu từ danh sách task vào file excel
 			List<Task> taskList = this.model.getTaskList();
 			int rowNum = 1;
+			SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
 			for (Task task : taskList) {
 				Row row = sheet.createRow(rowNum++);
 				
@@ -672,7 +670,7 @@ public class TaskListView extends JFrame {
 				taskCell.setCellValue(task.getTask());
 				
 				Cell dateCell = row.createCell(2);
-				dateCell.setCellValue(task.getDate().getDate()+"/"+(task.getDate().getMonth()+1)+"/"+(task.getDate().getYear()+1900));
+				dateCell.setCellValue(formatter.format(task.getDate()));
 				
 				Cell hourCell = row.createCell(3);
 				hourCell.setCellValue(task.getHour()+":"+task.getMinute());
@@ -706,7 +704,7 @@ public class TaskListView extends JFrame {
 
 		//hàm cập nhật task đã hoàn thành
 		public void modifyTask() {
-			DefaultTableModel model_table = (DefaultTableModel) table.getModel();
+			DefaultTableModel modelTable = (DefaultTableModel) table.getModel();
 			int i_row = table.getSelectedRow();
 			int choice = JOptionPane.showConfirmDialog(this, "Has your task completed?");		
 			if (choice == JOptionPane.YES_OPTION) {
@@ -714,7 +712,7 @@ public class TaskListView extends JFrame {
 				List<Task> taskList = this.model.getTaskList();
 				for (int i = 0; i < taskList.size(); i++) {
 					if (task.getIdTask() == taskList.get(i).getIdTask()) {
-						model_table.setValueAt(Status.getStatusByIndex(1), i, 4);
+						modelTable.setValueAt(Status.getStatusByIndex(1), i, 4);
 						taskList.get(i).setStatus(Status.getStatusByIndex(1));
 					}
 				}				

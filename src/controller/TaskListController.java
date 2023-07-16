@@ -18,14 +18,13 @@ public class TaskListController implements Action{
 	public void actionPerformed(ActionEvent e) {
 		String cm = e.getActionCommand();		
 		
-		if (cm.equals("Create")) {
-			this.view.deleteForm();
-			this.view.model.setChoice("Create");
-		} else if (cm.equals("Save")) {
+		if (cm.equals("Save")) {
 			try {
+				this.view.model.setChoice("Save");
 				this.view.processAddTask();
-				this.view.saveFile();
+				this.view.saveFile();				
 				JOptionPane.showMessageDialog(view, "You have successfully saved the file!");
+				this.view.deleteForm();				
 			} catch (Exception e2) {
 				e2.printStackTrace();
 			}			
@@ -33,8 +32,7 @@ public class TaskListController implements Action{
 			this.view.showTask();
 		} else if (cm.equals("Delete")) {
 			this.view.deleteTask();
-			this.view.saveFile();
-			JOptionPane.showMessageDialog(view, "You have successfully saved the file!");
+			this.view.saveFile();			
 		} else if (cm.equals("Complete")) {
 			this.view.modifyTask();
 		} else if (cm.equals("Search")) {
